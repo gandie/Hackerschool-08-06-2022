@@ -1,0 +1,19 @@
+# mittwald Auto-Deploy Workflow
+# This workflow was automatically created by the mittwald extension.
+# TODO: Implement deployment logic using the MITTWALD_DEPLOY_KEY secret.
+
+name: Deploy to mittwald
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: p-sr0t8w
+    steps:
+      - name: Placeholder
+        run: echo "Deployment workflow not yet implemented"
