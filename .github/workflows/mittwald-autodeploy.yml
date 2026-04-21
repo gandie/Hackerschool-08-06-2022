@@ -21,10 +21,26 @@ jobs:
       - name: Authenticate with mittwald
         id: authenticate
         run: |
-          RESPONSE=$(curl -s -X POST \
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
             -H "Authorization: Bearer ${{ secrets.MITTWALD_DEPLOY_CONFIG_ID }}:${{ secrets.MITTWALD_DEPLOY_KEY }}" \
             https://jhu5o6yd01eq.shares.zrok.io/api/deployment/authenticate)
-          TOKEN=$(echo $RESPONSE | jq -r '.token')
+          
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | sed '$d')
+          
+          if [ "$HTTP_CODE" != "200" ] && [ "$HTTP_CODE" != "201" ]; then
+            echo "Authentication failed with status $HTTP_CODE"
+            echo "Response: $BODY"
+            exit 1
+          fi
+          
+          TOKEN=$(echo "$BODY" | jq -r '.token')
+          if [ -z "$TOKEN" ] || [ "$TOKEN" = "null" ]; then
+            echo "Failed to extract token from response"
+            echo "Response: $BODY"
+            exit 1
+          fi
+          
           echo "MITTWALD_TOKEN=$TOKEN" >> $GITHUB_OUTPUT
 
       - name: Deploy to Mittwald Container Hosting
