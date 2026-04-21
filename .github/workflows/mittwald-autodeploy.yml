@@ -49,4 +49,4 @@ jobs:
         uses: mittwald/rp-container-deploy-action@master
         with:
           mittwald-api-token: ${{ steps.authenticate.outputs.MITTWALD_TOKEN }}
-          mittwald-project-id: 'p-sr0t8w'
+          mittwald-project-id: p-sr0t8w
