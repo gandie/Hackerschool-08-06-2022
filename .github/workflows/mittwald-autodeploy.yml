@@ -18,6 +18,8 @@ jobs:
     environment:
       name: p-sr0t8w
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
       - name: Authenticate with mittwald
         id: authenticate
         run: |
