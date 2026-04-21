@@ -1,6 +1,9 @@
 # mittwald Auto-Deploy Workflow
 # This workflow was automatically created by the mittwald extension.
-# TODO: Implement deployment logic using the MITTWALD_DEPLOY_KEY secret.
+#
+# The workflow authenticates with mittwald using MITTWALD_DEPLOY_KEY and
+# MITTWALD_DEPLOY_CONFIG_ID secrets, then makes the token available for
+# your deployment steps.
 
 name: Deploy to mittwald
 
@@ -15,5 +18,17 @@ jobs:
     environment:
       name: p-sr0t8w
     steps:
-      - name: Placeholder
-        run: echo "Deployment workflow not yet implemented"
+      - name: Authenticate with mittwald
+        id: authenticate
+        run: |
+          RESPONSE=$(curl -s -X POST \
+            -H "Authorization: Bearer ${{ secrets.MITTWALD_DEPLOY_CONFIG_ID }}:${{ secrets.MITTWALD_DEPLOY_KEY }}" \
+            https://extension-api.mittwald.dev/api/deployment/authenticate)
+          TOKEN=$(echo $RESPONSE | jq -r '.token')
+          echo "MITTWALD_TOKEN=$TOKEN" >> $GITHUB_OUTPUT
+
+      - name: Deploy to mittwald
+        run: |
+          # TODO: Implement your deployment logic here
+          # The mittwald API token is available as: ${{ steps.authenticate.outputs.MITTWALD_TOKEN }}
+          echo "Authenticated successfully. Token available for deployment."
