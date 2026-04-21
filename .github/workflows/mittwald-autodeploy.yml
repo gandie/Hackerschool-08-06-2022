@@ -27,8 +27,8 @@ jobs:
           TOKEN=$(echo $RESPONSE | jq -r '.token')
           echo "MITTWALD_TOKEN=$TOKEN" >> $GITHUB_OUTPUT
 
-      - name: Deploy to mittwald
-        run: |
-          # TODO: Implement your deployment logic here
-          # The mittwald API token is available as: ${{ steps.authenticate.outputs.MITTWALD_TOKEN }}
-          echo "Authenticated successfully. Token available for deployment."
+      - name: Deploy to Mittwald Container Hosting
+        uses: mittwald/rp-container-deploy-action@master
+        with:
+          mittwald-api-token: ${{ steps.authenticate.outputs.MITTWALD_TOKEN }}
+          mittwald-project-id: 'p-sr0t8w'
