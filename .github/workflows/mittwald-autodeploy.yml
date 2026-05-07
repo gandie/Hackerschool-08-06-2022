@@ -26,24 +26,49 @@ jobs:
           RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
             -H "Authorization: Bearer ${{ secrets.MITTWALD_DEPLOY_CONFIG_ID }}:${{ secrets.MITTWALD_DEPLOY_KEY }}" \
             https://mch8ont71pv8.shares.zrok.io/api/deployment/authenticate)
-          
+
           HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
           BODY=$(echo "$RESPONSE" | sed '$d')
-          
+
           if [ "$HTTP_CODE" != "200" ] && [ "$HTTP_CODE" != "201" ]; then
             echo "Authentication failed with status $HTTP_CODE"
             echo "Response: $BODY"
             exit 1
           fi
-          
+
           TOKEN=$(echo "$BODY" | jq -r '.token')
           if [ -z "$TOKEN" ] || [ "$TOKEN" = "null" ]; then
             echo "Failed to extract token from response"
             echo "Response: $BODY"
             exit 1
           fi
-          
+
           echo "MITTWALD_TOKEN=$TOKEN" >> $GITHUB_OUTPUT
+
+      - name: Fetch deployment configuration and environment variables
+        id: configuration
+        run: |
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X GET \
+            -H "Authorization: Bearer ${{ secrets.MITTWALD_DEPLOY_CONFIG_ID }}:${{ secrets.MITTWALD_DEPLOY_KEY }}" \
+            https://mch8ont71pv8.shares.zrok.io/api/deployment/configuration)
+
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | sed '$d')
+
+          if [ "$HTTP_CODE" != "200" ] && [ "$HTTP_CODE" != "201" ]; then
+            echo "Configuration fetch failed with status $HTTP_CODE"
+            echo "Response: $BODY"
+            exit 1
+          fi
+
+          ENV_VARS=$(echo "$BODY" | jq -r '.environmentVariables // {}')
+
+          if [ "$ENV_VARS" != "{}" ] && [ -n "$ENV_VARS" ]; then
+            echo "$ENV_VARS" | jq -r 'to_entries[] | "\(.key)=\(.value)"' > .env
+            echo "Environment variables written to .env file"
+          else
+            echo "No environment variables configured"
+          fi
 
       - name: Deploy to Mittwald Container Hosting
         uses: mittwald/rp-container-deploy-action@master
